@@ -1,0 +1,47 @@
+/* Code for use with Bosch BMP280   (Imperial)
+ * Display temp, atmospheric pressure and estimated altitude via i2C Serial
+ * This is a modified version of the Adafruit example code
+ * Mesaroot
+ */
+#include <Adafruit_BMP280.h>
+
+Adafruit_BMP280 bmp;  // I2C
+
+void setup() {
+  Serial.begin(9600);
+  Serial.println(F("BMP280 *F,psi,ft"));
+
+  if (!bmp.begin(0x76)) {
+    Serial.println(F("Could not find a valid BMP280 sensor, check wiring!"));
+    while (1)
+      ;
+  }
+
+  /* Default settings from datasheet. */
+  bmp.setSampling(Adafruit_BMP280::MODE_NORMAL,     /* Operating Mode. */
+                  Adafruit_BMP280::SAMPLING_X2,     /* Temp. oversampling */
+                  Adafruit_BMP280::SAMPLING_X16,    /* Pressure oversampling */
+                  Adafruit_BMP280::FILTER_X16,      /* Filtering. */
+                  Adafruit_BMP280::STANDBY_MS_500); /* Standby time. */
+}
+
+void loop() {
+
+  float f = bmp.readTemperature() * 9 / 5 + 32; // C to F
+  Serial.print(F("Air-tmp = "));
+  Serial.print(f);
+  Serial.println(" *F");
+
+  float P = bmp.readPressure() / 2953.00 * .4912;  //hPa to inHg to psi
+  Serial.print(F("Atm-psi = "));
+  Serial.print(P);
+  Serial.println(" psi");
+
+  float A = bmp.readAltitude(1014.333) * 3.28084; //The 1014.333 is the pressure(hPa) in your region
+  Serial.print(F("Est-alt = ")); // Desired alt at 89436 is 4,447.63
+  Serial.print(A);
+  Serial.println(" ft");
+
+  Serial.println();
+  delay(10000);
+}
